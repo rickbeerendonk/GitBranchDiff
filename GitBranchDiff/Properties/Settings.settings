@@ -1,0 +1,18 @@
+﻿<?xml version='1.0' encoding='utf-8'?>
+<SettingsFile xmlns="http://schemas.microsoft.com/VisualStudio/2004/01/settings" CurrentProfile="(Default)" GeneratedClassNamespace="GitBranchDiff.Properties" GeneratedClassName="Settings">
+  <Profiles />
+  <Settings>
+    <Setting Name="RepositoryPath" Type="System.String" Scope="User">
+      <Value Profile="(Default)">C:\Git\VisionSuite</Value>
+    </Setting>
+    <Setting Name="MasterBranchName" Type="System.String" Scope="User">
+      <Value Profile="(Default)">master</Value>
+    </Setting>
+    <Setting Name="DiffTool" Type="System.String" Scope="User">
+      <Value Profile="(Default)">%ProgramFiles(x86)%\Microsoft Visual Studio 12.0\Common7\IDE\vsdiffmerge.exe</Value>
+    </Setting>
+    <Setting Name="DiffToolArguments" Type="System.String" Scope="User">
+      <Value Profile="(Default)">"{0}" "{1}" /t</Value>
+    </Setting>
+  </Settings>
+</SettingsFile>

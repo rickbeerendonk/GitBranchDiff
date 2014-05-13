@@ -1,0 +1,24 @@
+﻿<Window x:Class="GitBranchDiff.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="Git Branch Diff" Height="350" Width="765.625">
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="*" />
+        </Grid.RowDefinitions>
+        <ComboBox Grid.Row="0">
+            
+        </ComboBox>
+        <ListBox Grid.Row="1" Name="changesBox" Margin="10" ItemsSource="{Binding Changes}" MouseDoubleClick="ChangesBox_OnMouseDoubleClick">
+            <ListBox.ItemTemplate>
+                <DataTemplate>
+                    <StackPanel Orientation="Horizontal">
+                        <TextBlock Text="{Binding Path}" />
+                        <TextBlock Text="{Binding Status}" Margin="10 0 0 0" Foreground="Gray" />
+                    </StackPanel>
+                </DataTemplate>
+            </ListBox.ItemTemplate>
+        </ListBox>
+    </Grid>
+</Window>
