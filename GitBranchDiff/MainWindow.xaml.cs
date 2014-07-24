@@ -102,20 +102,23 @@ namespace GitBranchDiff
 
         ~MainWindow()
         {
-            var dirInfo = new DirectoryInfo(TempFolder);
-
-            foreach (FileInfo file in dirInfo.GetFiles())
+            if (tempFolder != null)
             {
-                try
-                {
-                    file.Delete();
-                }
-                catch
-                {
-                }
-            }
+                var dirInfo = new DirectoryInfo(tempFolder);
 
-            dirInfo.Delete();
+                foreach (FileInfo file in dirInfo.GetFiles())
+                {
+                    try
+                    {
+                        file.Delete();
+                    }
+                    catch
+                    {
+                    }
+                }
+
+                dirInfo.Delete();
+            }
         }
 
         private void ChangesBox_OnMouseDoubleClick(object sender, MouseButtonEventArgs e)
