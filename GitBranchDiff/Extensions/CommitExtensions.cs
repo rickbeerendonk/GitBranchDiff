@@ -15,7 +15,7 @@ namespace GitBranchDiff.Extensions
             return commit.Parents.Count() > 1 && commit.Parents.Any(from.Contains);
         }
 
-        public static Commit GetParentFrom(this Commit commit, IEnumerable<Commit> from)
+        public static Commit GetSingleParentFrom(this Commit commit, IEnumerable<Commit> from)
         {
             return commit.Parents.Single(from.Contains);
         }

@@ -19,21 +19,7 @@ namespace GitBranchDiff
     /// </summary>
     public partial class MainWindow : Window
     {
-        private string tempFolder;
-
-        private string TempFolder
-        {
-            get
-            {
-                if (tempFolder == null)
-                {
-                    tempFolder = Path.Combine(Path.GetTempPath(), Path.GetRandomFileName());
-                    Directory.CreateDirectory(tempFolder);
-                }
-
-                return tempFolder;
-            }
-        }
+        private TempDirectory tempFolder = new TempDirectory();
 
         private string RepositoryPath
         {
@@ -44,80 +30,29 @@ namespace GitBranchDiff
         {
             InitializeComponent();
 
-            string masterBranchName = Properties.Settings.Default.MasterBranchName;
+            string referenceBranchName = Properties.Settings.Default.MasterBranchName;
 
             using (var repository = new Repository(RepositoryPath))
             {
-                Branch referenceBranch = repository.Branches[masterBranchName];
-                Branch currentBranch = repository.Branches.Single(b => b.IsCurrentRepositoryHead);
+                Branch referenceBranch = repository.Branches[referenceBranchName];
+                Branch currentBranch = repository.Branches.Current();
 
-                IEnumerable<Commit> referenceBranchCommits = referenceBranch.Commits;
+                Commit latestMergeCommit = currentBranch.LatestMergeCommit(referenceBranch);
 
-                if (referenceBranchCommits.Contains(currentBranch.Tip))
+                IEnumerable<TreeEntryChanges> changes = null;
+                if (latestMergeCommit != null)
                 {
-                    // Current branch is merged back to master.
-                    // So we find the last commit on master before this merge and all it's ancestors.
-                    var masterTipAfterMerge =
-                        referenceBranchCommits.SkipWhile(c => c.Parents.All(p => p != currentBranch.Tip)).FirstOrDefault();
-                    if (masterTipAfterMerge != null)
-                    {
-                        var masterTipBeforeMerge = masterTipAfterMerge.Parents.First(p => p != currentBranch.Tip);
-                        referenceBranchCommits =
-                            new List<Commit> { masterTipBeforeMerge }.Concat(masterTipBeforeMerge.GetAllAncestors());
-                    }
-                }
-
-                var branchCommits = currentBranch.Commits.Except(referenceBranchCommits).ToList();
-                var branchCommitsMergedFromMaster = branchCommits.Where(c => c.IsMergeFrom(referenceBranchCommits)).ToList();
-
-                Commit mostRecentMergeSource = null;
-                IEnumerable<TreeEntryChanges> treeChanges = null;
-                if (branchCommitsMergedFromMaster.Any())
-                {
-                    mostRecentMergeSource = branchCommitsMergedFromMaster.First().GetParentFrom(referenceBranchCommits);
-
-                    //changesBox.ItemsSource = treeChanges;
-                }
-                else
-                {
-                    if (branchCommits.Any())
-                    {
-                        mostRecentMergeSource = branchCommits.Last().GetParentFrom(referenceBranchCommits);
-                    }
-                }
-
-                if (mostRecentMergeSource != null)
-                {
-                    treeChanges = repository.Diff.Compare<TreeChanges>(mostRecentMergeSource.Tree, currentBranch.Tip.Tree)
+                    changes = repository.Diff.Compare<TreeChanges>(latestMergeCommit.Tree, currentBranch.Tip.Tree)
                         .OrderBy(tc => tc.Path);
                 }
 
-                DataContext = new BranchInfo(
+                DataContext = new RepositoryInfo(
+                    RepositoryPath,
+                    repository.Branches.Select(b => b.Name).ToList(),
                     currentBranch.Name,
                     referenceBranch.Name,
-                    mostRecentMergeSource == null ? null : mostRecentMergeSource.Sha,
-                    treeChanges);
-            }
-        }
-
-        ~MainWindow()
-        {
-            if (tempFolder != null)
-            {
-                var dirInfo = new DirectoryInfo(tempFolder);
-
-                foreach (FileInfo file in dirInfo.GetFiles())
-                {
-                    try
-                    {
-                        file.Delete();
-                    }
-                    catch
-                    {
-                    }
-                }
-
-                dirInfo.Delete();
+                    latestMergeCommit == null ? null : latestMergeCommit.Sha,
+                    changes);
             }
         }
 
@@ -130,8 +65,8 @@ namespace GitBranchDiff
 
             using (var repository = new Repository(RepositoryPath))
             {
-                var mostRecentMergeSource = repository.Commits.FirstOrDefault(c => c.Sha == ((BranchInfo)DataContext).MostRecentMergeSourceSha);
-                if (mostRecentMergeSource == null)
+                var latestMergeCommit = repository.Commits.FirstOrDefault(c => c.Sha == ((RepositoryInfo)DataContext).LatestMergeCommitSha);
+                if (latestMergeCommit == null)
                 {
                     return;
                 }
@@ -139,8 +74,8 @@ namespace GitBranchDiff
                 var change = (BranchChange)changesBox.SelectedItem;
                 string path = change.Path;
                 string oldPath = change.OldPath;
-                string tmpFile = Path.Combine(TempFolder, Path.GetFileName(path));
-                var treeEntry = mostRecentMergeSource[oldPath];
+                string tmpFile = Path.Combine(tempFolder.Info.FullName, Path.GetFileName(path));
+                var treeEntry = latestMergeCommit[oldPath];
                 string newFile = Path.Combine(RepositoryPath, path);
 
                 if (treeEntry == null)

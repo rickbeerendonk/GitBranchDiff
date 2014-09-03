@@ -5,12 +5,12 @@
     <Grid>
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
             <RowDefinition Height="*" />
         </Grid.RowDefinitions>
-        <ComboBox Grid.Row="0">
-            
-        </ComboBox>
-        <ListBox Grid.Row="1" Name="changesBox" Margin="10" ItemsSource="{Binding Changes}" MouseDoubleClick="ChangesBox_OnMouseDoubleClick">
+        <Label Grid.Row="0" Content="{Binding CurrentBranchName}"></Label>
+        <ComboBox Grid.Row="1" ItemsSource="{Binding BrancheNames}" SelectedIndex="{Binding BrancheNamesIndex}"></ComboBox>
+        <ListBox Grid.Row="2" Name="changesBox" Margin="10" ItemsSource="{Binding Changes}" MouseDoubleClick="ChangesBox_OnMouseDoubleClick">
             <ListBox.ItemTemplate>
                 <DataTemplate>
                     <StackPanel Orientation="Horizontal">
