@@ -70,7 +70,7 @@ namespace GitBranchDiff.Model
             {
                 return _ReferenceBranchName;
             }
-            protected set
+            set
             {
                 ChangeProperty(o => o.ReferenceBranchName, ref _ReferenceBranchName, value);
             }

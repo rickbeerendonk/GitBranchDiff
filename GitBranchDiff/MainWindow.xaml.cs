@@ -1,9 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Windows;
+using System.Windows.Controls;
 using System.Windows.Input;
 
 using GitBranchDiff.Model;
@@ -32,6 +34,11 @@ namespace GitBranchDiff
 
             string referenceBranchName = Properties.Settings.Default.MasterBranchName;
 
+            Update(referenceBranchName);
+        }
+
+        private void Update(string referenceBranchName)
+        {
             using (var repository = new Repository(RepositoryPath))
             {
                 Branch referenceBranch = repository.Branches[referenceBranchName];
@@ -46,13 +53,15 @@ namespace GitBranchDiff
                         .OrderBy(tc => tc.Path);
                 }
 
-                DataContext = new RepositoryInfo(
+                var repositoryInfo = new RepositoryInfo(
                     RepositoryPath,
                     repository.Branches.Select(b => b.Name).ToList(),
                     currentBranch.Name,
                     referenceBranch.Name,
                     latestMergeCommit == null ? null : latestMergeCommit.Sha,
                     changes);
+
+                DataContext = repositoryInfo;
             }
         }
 
@@ -109,6 +118,11 @@ namespace GitBranchDiff
                 */
 
             }
+        }
+
+        private void Selector_OnSelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            Update((string)e.AddedItems[0]);
         }
     }
 }
